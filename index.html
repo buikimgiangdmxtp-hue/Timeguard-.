@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeGuard - Quản Lý Báo Thức Cyber</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #05050a;
+            --panel-bg: rgba(13, 17, 23, 0.75);
+            --neon-cyan: #00f3ff;
+            --neon-purple: #b000ff;
+            --neon-pink: #ff0055;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --border-glow: rgba(0, 243, 255, 0.3);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 15px; display: flex; justify-content: center; align-items: center; background-image: radial-gradient(circle at 10% 20%, rgba(176, 0, 255, 0.1) 0%, transparent 40%), radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.1) 0%, transparent 40%); }
+
+        .app-container { width: 100%; max-width: 480px; background: var(--panel-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-glow); border-radius: 20px; box-shadow: 0 0 30px rgba(0, 243, 255, 0.15); overflow: hidden; display: flex; flex-direction: column; }
+
+        header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: linear-gradient(180deg, rgba(0, 243, 255, 0.05) 0%, transparent 100%); }
+        header h1 { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); letter-spacing: 1px; }
+        header p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        .nav-tabs { display: flex; background: rgba(0, 0, 0, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .nav-tab { flex: 1; padding: 12px; text-align: center; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.3s; border-bottom: 2px solid transparent; }
+        .nav-tab.active { color: var(--neon-cyan); border-bottom-color: var(--neon-cyan); background: rgba(0, 243, 255, 0.05); text-shadow: 0 0 8px rgba(0, 243, 255, 0.4); }
+
+        .tab-content { display: none; padding: 20px; max-height: 420px; overflow-y: auto; }
+        .tab-content.active { display: block; }
+
+        .btn-unlock { width: 100%; background: linear-gradient(135deg, var(--neon-cyan), #0077ff); color: #000; border: none; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; margin-bottom: 15px; box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); transition: 0.2s; }
+        .btn-unlock:active { transform: scale(0.98); }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff; font-size: 0.95rem; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0, 243, 255, 0.2); }
+
+        .btn-primary { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; box-shadow: 0 0 15px rgba(176, 0, 255, 0.4); transition: 0.3s; margin-top: 5px; }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .task-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .task-card.completed { border-color: rgba(0, 255, 100, 0.3); background: rgba(0, 255, 100, 0.02); }
+        .task-info h3 { font-size: 0.95rem; margin-bottom: 4px; color: #fff; }
+        .task-info p { font-size: 0.75rem; color: var(--text-muted); font-family: 'Orbitron', sans-serif; }
+        
+        .badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 20px; font-weight: 600; text-transform: uppercase; }
+        .badge.pending { background: rgba(255, 170, 0, 0.15); color: #ffaa00; border: 1px solid rgba(255, 170, 0, 0.3); }
+        .badge.done { background: rgba(0, 255, 100, 0.15); color: #00ff64; border: 1px solid rgba(0, 255, 100, 0.3); }
+
+        .history-item { background: rgba(0,0,0,0.2); border-left: 3px solid var(--neon-cyan); padding: 10px 12px; margin-bottom: 8px; border-radius: 0 8px 8px 0; font-size: 0.8rem; }
+        .history-time { color: var(--neon-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.7rem; margin-bottom: 2px; }
+
+        /* Modal Báo Động */
+        #alarmModal { display: none; position: fixed; inset: 0; background: rgba(5, 5, 10, 0.9); z-index: 9999; justify-content: center; align-items: center; padding: 20px; }
+        .modal-box { background: #0d1117; border: 2px solid var(--neon-pink); border-radius: 20px; padding: 30px; text-align: center; max-width: 360px; width: 100%; box-shadow: 0 0 40px rgba(255, 0, 85, 0.4); animation: pulseGlow 1s infinite alternate; }
+        @keyframes pulseGlow { from { box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); } to { box-shadow: 0 0 40px rgba(255, 0, 85, 0.7); } }
+        .modal-box h2 { color: var(--neon-pink); font-family: 'Orbitron', sans-serif; margin-bottom: 10px; font-size: 1.3rem; }
+        .modal-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
+        .modal-btns { display: flex; gap: 10px; }
+        .btn-modal { flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 0.85rem; }
+        .btn-done { background: #00ff64; color: #000; }
+        .btn-stop { background: #ff3333; color: #fff; }
+
+        .empty-text { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>TIMEGUARD</h1>
+            <p>Hệ Thống Quản Lý Báo Thức Cyber</p>
+        </header>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('alarm')">Tác Vụ</div>
+            <div class="nav-tab" onclick="switchTab('history')">Lịch Sử (<span id="historyCount">0</span>)</div>
+            <div class="nav-tab" onclick="switchTab('code')">Android Logic</div>
+        </div>
+
+        <!-- TAB 1: TÁC VỤ & BÁO THỨC -->
+        <div id="tab-alarm" class="tab-content active">
+            <button class="btn-unlock" id="audioBtn" onclick="initAudioEngine()">🔓 Bật Âm Thanh Hệ Thống</button>
+            
+            <div class="form-group">
+                <label>Tên Tác Vụ / Tiêu Đề</label>
+                <input type="text" id="taskTitle" placeholder="Ví dụ: Uống thuốc, Họp nhóm...">
+            </div>
+            
+            <div class="form-group">
+                <label>Thời Gian Báo Thức</label>
+                <input type="datetime-local" id="taskTime">
+            </div>
+
+            <button class="btn-primary" onclick="createTask()">+ Thêm & Kích Hoạt Báo Thức</button>
+
+            <div style="margin-top: 20px;">
+                <label style="margin-bottom: 10px;">Danh Sách Theo Dõi</label>
+                <div id="taskList"></div>
+            </div>
+        </div>
+
+        <!-- TAB 2: LỊCH SỬ -->
+        <div id="tab-history" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <label style="margin:0;">Nhật Ký Kích Hoạt</label>
+                <button onclick="clearHistory()" style="background:none; border:none; color:var(--neon-pink); font-size:0.75rem; cursor:pointer;">Xóa lịch sử</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+
+        <!-- TAB 3: MÔ PHỎNG LOGIC ANDROID -->
+        <div id="tab-code" class="tab-content">
+            <label>Mã nguồn Java (BroadcastReceiver Logic):</label>
+            <pre style="background:rgba(0,0,0,0.5); padding:10px; border-radius:8px; font-size:0.7rem; color:var(--neon-cyan); overflow-x:auto; margin-top:6px; font-family:monospace;">
+public class AlarmReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context ctx, Intent intent) {
+        long taskId = intent.getLongExtra("taskId", -1);
+        boolean completed = prefs.getBoolean("completed", false);
+        if (taskId != -1 && !completed) {
+            triggerAlarmSiren();
+        }
+    }
+}</pre>
+        </div>
+    </div>
+
+    <!-- POPUP KHI BÁO THỨC KÊU -->
+    <div id="alarmModal">
+        <div class="modal-box">
+            <h2>⏰ BÁO THỨC ĐẾN GIỜ!</h2>
+            <p id="modalTaskName">Tác vụ đang chờ xử lý...</p>
+            <div class="modal-btns">
+                <button class="btn-modal btn-done" onclick="resolveAlarm(true)">Đã Hoàn Thành</button>
+                <button class="btn-modal btn-stop" onclick="resolveAlarm(false)">Tắt Chuông</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tg_tasks') || '[]');
+        let historyLog = JSON.parse(localStorage.getItem('tg_history') || '[]');
+        let audioCtx = null;
+        let alarmInterval = null;
+        let activeAlarmId = null;
+
+        function initAudioEngine() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                document.getElementById('audioBtn').style.background = 'rgba(0, 255, 100, 0.2)';
+                document.getElementById('audioBtn').style.color = '#00ff64';
+                document.getElementById('audioBtn'].innerText = '✔ Âm thanh đã sẵn sàng';
+                playChimeSound();
+            } catch (e) {
+                alert('Trình duyệt không hỗ trợ Web Audio.');
+            }
+        }
+
+        function playChimeSound() {
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.15); // E5
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } catch (e) {}
+        }
+
+        let ringLoop = null;
+        function startAlarmRinging(taskTitle, id) {
+            activeAlarmId = id;
+            document.getElementById('modalTaskName').innerText = taskTitle;
+            document.getElementById('alarmModal').style.display = 'flex';
+            
+            // Phát chuông liên tục mỗi 0.8 giây
+            if (!ringLoop) {
+                playChimeSound();
+                ringLoop = setInterval(playChimeSound, 800);
+            }
+            
+            // Ghi nhận lịch sử
+            addHistory(taskTitle);
+        }
+
+        function resolveAlarm(isCompleted) {
+            document.getElementById('alarmModal').style.display = 'none';
+            if (ringLoop) {
+                clearInterval(ringLoop);
+                ringLoop = null;
+            }
+
+            if (activeAlarmId !== null) {
+                let task = tasks.find(t => t.id === activeAlarmId);
+                if (task) {
+                    task.completed = isCompleted;
+                }
+                activeAlarmId = null;
+                saveAndRender();
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+            
+            if(tabName === 'alarm') {
+                document.getElementById('tab-alarm').classList.add('active');
+                event.currentTarget.classList.add('active');
+            } else if(tabName === 'history') {
+                document.getElementById('tab-
